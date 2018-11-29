@@ -1,31 +1,33 @@
 package cache
 
 import (
-	"fmt"
+	"context"
+	"github.com/rs/zerolog/log"
 )
 
+type client interface {
+	SetKey(context.Context, Model) error
+	GetKey(context.Context, Model) error
+}
+
 type Service struct {
-	c Cache
+	c client
 }
 
-func NewService(c Cache) *Service {
-	return &Service{c: c}
-}
-
-func (s *Service) SetKey(m Model) error {
-	fmt.Println("insert", m)
-	if err := s.c.SetKey(m); err != nil {
+func (s *Service) SetKey(ctx context.Context, m Model) error {
+	log.Ctx(ctx).Info().Msgf("set key %+v", m)
+	if err := s.c.SetKey(ctx, m); err != nil {
 		return err
 	}
-	fmt.Println("inserted", m)
+	log.Ctx(ctx).Debug().Msgf("key set %+v", m)
 	return nil
 }
 
-func (s *Service) GetKey(m Model) error {
-	fmt.Println("load", m)
-	if err := s.c.GetKey(m); err != nil {
+func (s *Service) GetKey(ctx context.Context, m Model) error {
+	log.Ctx(ctx).Info().Msgf("get key %+v", m)
+	if err := s.c.GetKey(ctx, m); err != nil {
 		return err
 	}
-	fmt.Println("loaded", m)
+	log.Ctx(ctx).Debug().Msgf("key get %+v", m)
 	return nil
 }

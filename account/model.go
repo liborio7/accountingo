@@ -6,12 +6,12 @@ import (
 )
 
 type Model struct {
-	Id           uuid.UUID
-	Name         string
-	Surname      string
-	Currency     string
-	Amount       int64
-	InsertDate   time.Time
-	InsertMillis uint64
-	Version      uint8
+	Id           uuid.UUID `db:"id" id:"true"`
+	Version      uint8     `db:"version"`
+	InsertDate   time.Time `db:"insert_date"`
+	InsertMillis int64     `db:"insert_millis"`
+	Name         string    `db:"name"`
+	Surname      string    `db:"surname"`
+	Currency     string    `db:"currency"`
+	Amount       int64     `db:"amount"`
 }

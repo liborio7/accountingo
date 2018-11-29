@@ -1,24 +1,30 @@
 package cache
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"github.com/go-redis/redis"
 )
 
-func Redis(o *Opt) Cache {
+type RedisOpt struct {
+	Addr     string
+	PoolSize int
+}
+
+func Redis(o *RedisOpt) *Service {
 	client := redis.NewClient(&redis.Options{
 		Addr:     o.Addr,
 		PoolSize: o.PoolSize,
 	})
-	return &redisCache{client}
+	return &Service{&redisClient{client: client}}
 }
 
-type redisCache struct {
+type redisClient struct {
 	client *redis.Client
 }
 
-func (c *redisCache) SetKey(m Model) error {
+func (c *redisClient) SetKey(_ context.Context, m Model) error {
 	bytes, marshalErr := json.Marshal(m)
 	if marshalErr != nil {
 		return marshalErr
@@ -33,7 +39,7 @@ func (c *redisCache) SetKey(m Model) error {
 	return nil
 }
 
-func (c *redisCache) GetKey(m Model) error {
+func (c *redisClient) GetKey(_ context.Context, m Model) error {
 	bytes, getErr := c.client.Get(m.GetKey()).Result()
 	if getErr != nil {
 		return getErr

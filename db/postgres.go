@@ -1,9 +1,9 @@
 package db
 
 import (
-	"database/sql"
+	"github.com/gocraft/dbr"
 	_ "github.com/lib/pq"
-	"log"
+	"github.com/rs/zerolog/log"
 )
 
 type PostresOpt struct {
@@ -11,12 +11,12 @@ type PostresOpt struct {
 	MaxConns int
 }
 
-func Postgres(o *PostresOpt) *sql.DB {
-	db, err := sql.Open("postgres", o.ConnStr)
+func Postgres(o *PostresOpt) *Service {
+	conn, err := dbr.Open("postgres", o.ConnStr, nil)
 	if err != nil {
-		log.Panicf("unable to obtain db connection: %v", o.ConnStr)
+		log.Panic().Msgf("unable to obtain db connection: %+v", o.ConnStr)
 	}
-	db.SetMaxIdleConns(o.MaxConns)
-	db.SetMaxOpenConns(o.MaxConns)
-	return db
+	conn.SetMaxIdleConns(o.MaxConns)
+	conn.SetMaxOpenConns(o.MaxConns)
+	return &Service{conn}
 }
