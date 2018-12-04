@@ -6,9 +6,9 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 	"github.com/liborio7/accountingo/account"
+	"github.com/liborio7/accountingo/api"
 	"github.com/liborio7/accountingo/cache"
 	"github.com/liborio7/accountingo/db"
-	"github.com/liborio7/accountingo/response"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"math/rand"
@@ -38,7 +38,7 @@ func main() {
 
 	r := chi.NewRouter()
 	r.Use(requestId)
-	r.Use(logging)
+	r.Use(tracingRequest)
 	r.Use(render.SetContentType(render.ContentTypeJSON))
 
 	r.Mount("/users", account.NewHandler(repo))
@@ -55,7 +55,7 @@ func requestId(next http.Handler) http.Handler {
 	})
 }
 
-func logging(next http.Handler) http.Handler {
+func tracingRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		rid := ctx.Value("rid")
@@ -63,13 +63,15 @@ func logging(next http.Handler) http.Handler {
 			Str("rid", rid.(string)).
 			Logger()
 
+		req := r.WithContext(logger.WithContext(ctx))
 		t1 := time.Now()
 		logger.Info().
-			Str("method", r.Method).
-			Str("uri", r.RequestURI).
+			Str("method", req.Method).
+			Str("uri", req.RequestURI).
 			Msg("--- START ---")
-		resp := &response.Writer{ResponseWriter: w}
-		next.ServeHTTP(resp, r.WithContext(logger.WithContext(ctx)))
+
+		resp := api.NewResponse(w)
+		next.ServeHTTP(resp, req)
 		logger.Info().
 			Str("status", fmt.Sprintf("%d", resp.Status())).
 			Str("response_time", time.Since(t1).String()).

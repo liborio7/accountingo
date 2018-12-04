@@ -3,7 +3,7 @@ package account
 import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
-	"github.com/liborio7/accountingo/response"
+	"github.com/liborio7/accountingo/api"
 	"github.com/rs/zerolog/log"
 	"github.com/satori/go.uuid"
 	"net/http"
@@ -29,13 +29,13 @@ func (h *Handler) insert(resp http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
 	body := &Request{}
 	if err := render.Bind(req, body); err != nil {
-		_ = render.Render(resp, req, response.ErrBadRequest(err))
+		_ = render.Render(resp, req, api.ErrBadRequest(err))
 		return
 	}
 	log.Ctx(ctx).Info().Msgf("handle insert with body: %+v", body)
 	model := body.Model
 	if err := h.repo.Insert(ctx, model); err != nil {
-		_ = render.Render(resp, req, response.ErrBadRequest(err))
+		_ = render.Render(resp, req, api.ErrBadRequest(err))
 		return
 	}
 	render.Status(req, http.StatusOK)
@@ -47,13 +47,13 @@ func (h *Handler) getById(resp http.ResponseWriter, req *http.Request) {
 	id := chi.URLParam(req, "id")
 	uid, err := uuid.FromString(id)
 	if err != nil {
-		_ = render.Render(resp, req, response.ErrNotFound(err))
+		_ = render.Render(resp, req, api.ErrNotFound(err))
 		return
 	}
 	log.Ctx(ctx).Info().Msgf("handle get by id: %+v", id)
 	model := &Model{}
 	if err := h.repo.LoadById(ctx, model, &uid); err != nil {
-		_ = render.Render(resp, req, response.ErrNotFound(err))
+		_ = render.Render(resp, req, api.ErrNotFound(err))
 		return
 	}
 	render.Status(req, http.StatusOK)
@@ -70,10 +70,14 @@ func (h *Handler) get(resp http.ResponseWriter, req *http.Request) {
 	}
 	log.Ctx(ctx).Info().Msgf("handle get starting after %+v limit %+v", sa, limit)
 	var models []Model
-	if err := h.repo.Load(ctx, &models, &sa, &limit); err != nil {
-		_ = render.Render(resp, req, response.ErrBadRequest(err))
+	if err := h.repo.Load(ctx, &models, &sa, limit+1); err != nil {
+		_ = render.Render(resp, req, api.ErrBadRequest(err))
 		return
 	}
 	render.Status(req, http.StatusOK)
 	render.JSON(resp, req, NewPaginatedResponse(models, int(limit)))
+}
+
+func (h *Handler) update(resp http.ResponseWriter, req *http.Request) {
+
 }

@@ -56,18 +56,14 @@ func (r *Repo) LoadById(ctx context.Context, dest *Model, id *uuid.UUID) error {
 	return nil
 }
 
-func (r *Repo) Load(ctx context.Context, dest *[]Model, startingAfter *uint64, limit *uint64) error {
+func (r *Repo) Load(ctx context.Context, dest *[]Model, startingAfter *uint64, limit uint64) error {
 	stm := r.db.OpenSession().
 		Select("*").
 		From("account")
 	if startingAfter != nil {
 		stm = stm.Where("insert_millis > ?", startingAfter)
 	}
-	if limit != nil {
-		stm = stm.Limit(*limit)
-	} else {
-		stm = stm.Limit(20)
-	}
+	stm = stm.Limit(limit)
 	n, err := stm.LoadContext(ctx, dest)
 	if err != nil {
 		return err
