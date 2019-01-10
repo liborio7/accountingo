@@ -24,8 +24,17 @@ func main() {
 	}
 	log.Logger = zerolog.New(output).With().Timestamp().Caller().Logger()
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		log.Panic().Msg("$PORT must be set")
+	}
+	dbUrl := os.Getenv("DATABASE_URL")
+	if dbUrl == "" {
+		log.Panic().Msg("$DATABASE_URL must be set")
+	}
+
 	dbService := db.Postgres(&db.PostresOpt{
-		ConnStr:  "postgres://@localhost:5432/postgres?sslmode=disable",
+		ConnStr:  dbUrl,
 		MaxConns: 10,
 	})
 	// cacheService := cache.Redis(&cache.RedisOpt{
@@ -42,7 +51,7 @@ func main() {
 
 	r.Mount("/users", account.NewHandler(repo))
 
-	if err := http.ListenAndServe(":3000", r); err != nil {
+	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Panic().Msgf("error during router server startup: %+v", err)
 	}
 }
