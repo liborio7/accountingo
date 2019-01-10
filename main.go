@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/liborio7/accountingo/account"
 	"github.com/liborio7/accountingo/api"
 	"github.com/liborio7/accountingo/db"
@@ -32,6 +34,11 @@ func main() {
 	if dbUrl == "" {
 		log.Panic().Msg("$DATABASE_URL must be set")
 	}
+
+	m, _ := migrate.New(
+		"file:///migrations",
+		dbUrl)
+	_ = m.Steps(1)
 
 	dbService := db.Postgres(&db.PostresOpt{
 		ConnStr:  dbUrl,
