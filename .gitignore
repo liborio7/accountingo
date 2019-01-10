@@ -1,1 +1,4 @@
+.env
+.docker_build/
 .idea/
+accountingo

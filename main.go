@@ -7,7 +7,6 @@ import (
 	"github.com/go-chi/render"
 	"github.com/liborio7/accountingo/account"
 	"github.com/liborio7/accountingo/api"
-	"github.com/liborio7/accountingo/cache"
 	"github.com/liborio7/accountingo/db"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -29,12 +28,12 @@ func main() {
 		ConnStr:  "postgres://@localhost:5432/postgres?sslmode=disable",
 		MaxConns: 10,
 	})
-	cacheService := cache.Redis(&cache.RedisOpt{
-		Addr:     "localhost:6379",
-		PoolSize: 10,
-	})
+	// cacheService := cache.Redis(&cache.RedisOpt{
+	//     Addr:     "localhost:6379",
+	//     PoolSize: 10,
+	// })
 
-	repo := account.NewRepo(dbService, cacheService)
+	repo := account.NewRepo(dbService, nil)
 
 	r := chi.NewRouter()
 	r.Use(requestId)

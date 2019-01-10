@@ -1,0 +1,12 @@
+{
+  "name": "Start on Heroku: Go",
+  "description": "Accountingo App",
+  "keywords": [
+    "accountingo",
+    "accounting",
+    "account",
+    "go"
+  ],
+  "website": "http://github.com/liborio7/accountingo",
+  "repository": "http://github.com/liborio7&/accountingo"
+}
