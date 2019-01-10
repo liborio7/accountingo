@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/render"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/liborio7/accountingo/account"
 	"github.com/liborio7/accountingo/api"
 	"github.com/liborio7/accountingo/db"
@@ -28,17 +29,20 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		log.Panic().Msg("$PORT must be set")
+		port = "3000"
 	}
 	dbUrl := os.Getenv("DATABASE_URL")
 	if dbUrl == "" {
-		log.Panic().Msg("$DATABASE_URL must be set")
+		dbUrl = "postgres://@localhost:5432/postgres?sslmode=disable"
 	}
 
-	m, _ := migrate.New(
-		"file:///migrations",
+	m, err := migrate.New(
+		"file://./migrations",
 		dbUrl)
-	_ = m.Steps(1)
+	if err != nil {
+		log.Error().Msgf("error on new migration: %s", err.Error())
+	}
+	_ = m.Steps(0)
 
 	dbService := db.Postgres(&db.PostresOpt{
 		ConnStr:  dbUrl,
