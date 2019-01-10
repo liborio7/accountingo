@@ -42,7 +42,7 @@ func main() {
 	if err != nil {
 		log.Error().Msgf("error on new migration: %s", err.Error())
 	}
-	_ = m.Steps(0)
+	_ = m.Steps(1)
 
 	dbService := db.Postgres(&db.PostresOpt{
 		ConnStr:  dbUrl,
